@@ -3,6 +3,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useSantriStore } from '@/stores/santriStore';
 import Tag from 'primevue/tag';
+import Avatar from 'primevue/avatar';
 
 const dt = ref();
 const santriStore = useSantriStore();
@@ -66,6 +67,17 @@ const clearTable = () => {
   Object.keys(filters.value).forEach((key) => {
     filters.value[key].value = null;
   });
+};
+
+// Fungsi untuk mendapatkan inisial dari nama lengkap
+const getInitials = (fullname) => {
+  if (!fullname) return '';
+  return fullname
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
 };
 
 // Fungsi untuk menampilkan label gender
@@ -134,9 +146,12 @@ const viewDetail = (santri) => {
         </template>
       </Column>
 
-      <Column field="fullname" header="Nama" sortable style="min-width: 12rem">
+      <Column field="fullname" header="Nama" sortable style="min-width: 16rem">
         <template #body="{ data }">
-          {{ data.fullname }}
+          <div class="flex items-center gap-4">
+            <Avatar :label="getInitials(data.fullname)" shape="circle" size="normal" />
+            <span>{{ data.fullname }}</span>
+          </div>
         </template>
       </Column>
 
@@ -185,7 +200,7 @@ const viewDetail = (santri) => {
 
       <Column style="width: 5rem">
         <template #body="slotProps">
-          <Button icon="pi pi-eye" outlined rounded @click="viewDetail(slotProps.data)" />
+          <Button icon="pi pi-info-circle" label="Detail" @click="viewDetail(slotProps.data)" />
         </template>
       </Column>
     </DataTable>

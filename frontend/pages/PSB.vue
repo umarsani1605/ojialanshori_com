@@ -4,57 +4,68 @@ import { ref, computed } from 'vue';
 import { useDialog } from 'primevue/usedialog';
 import SantriFormDialog from '@/components/dialogs/SantriFormDialog.vue';
 import DeleteDialog from '@/components/dialogs/DeleteDialog.vue';
+import Tag from 'primevue/tag';
 
 const dialog = useDialog();
 const dt = ref();
 
 // Data Statis untuk Filter/Dropdown
 const angkatanList = ['2018', '2019', '2020', '2021', '2022', '2023', '2024'];
-const jurusanList = ['IPA', 'IPS', 'Bahasa', 'Teknik'];
-const roleList = ['santri', 'pengurus', 'ketua', 'pembina'];
+const fakultasList = ['Fakultas Teknik', 'Fakultas Ekonomi', 'Fakultas Hukum', 'FMIPA', 'FIB'];
+const jurusanList = ['Teknik Informatika', 'Teknik Elektro', 'Manajemen', 'Hukum', 'Matematika'];
 
 // Data Statis Santri
 const daftarSantri = ref(
   [
     {
       id: 1,
-      name: 'Ahmad Fauzi',
+      fullname: 'Fulan',
+      jurusan: 'Teknik Informatika',
+      fakultas: 'Fakultas Teknologi dan Sains Data',
+      university: 'Universitas Sebelas Maret',
       angkatan: '2019',
-      gender: 'laki-laki',
-      jurusan: 'IPA',
-      role: 'santri',
+      whatsapp: '081234567890',
+      formulir: 'FORMULIR PEND...',
     },
     {
       id: 2,
-      name: 'Siti Aminah',
+      fullname: 'Fulanah',
+      jurusan: 'Manajemen',
+      fakultas: 'Fakultas Ekonomi dan Bisnis',
+      university: 'Universitas Muhammadiyah Surakarta',
       angkatan: '2020',
-      gender: 'perempuan',
-      jurusan: 'IPS',
-      role: 'pengurus',
+      whatsapp: '081234567891',
+      formulir: 'FORMULIR PEND...',
     },
     {
       id: 3,
-      name: 'Muhammad Rizki',
+      fullname: 'Fulanah',
+      jurusan: 'Pendidikan Matematika',
+      fakultas: 'Fakultas Keguruan dan Ilmu Pendidikan',
+      university: 'Universitas Sebelas Maret',
       angkatan: '2021',
-      gender: 'laki-laki',
-      jurusan: 'Teknik',
-      role: 'ketua',
+      whatsapp: '081234567892',
+      formulir: 'FORMULIR PEND...',
     },
     {
       id: 4,
-      name: 'Fatimah Az-Zahra',
-      angkatan: '2022',
-      gender: 'perempuan',
-      jurusan: 'Bahasa',
-      role: 'santri',
+      fullname: 'Fulanah',
+      jurusan: 'Kimia',
+      fakultas: 'Fakultas Matematika dan Ilmu Pengetahuan Alam',
+      university: 'Universitas Sebelas Maret',
+      angkatan: '2020',
+      whatsapp: '081234567891',
+      formulir: 'FORMULIR PEND...',
     },
     {
       id: 5,
-      name: 'Abdullah Malik',
-      angkatan: '2023',
-      gender: 'laki-laki',
-      jurusan: 'IPA',
-      role: 'santri',
+      fullname: 'Fulan',
+      jurusan: 'Teknik Sipil',
+      fakultas: 'Fakultas Teknik',
+      university: 'Universitas Sebelas Maret',
+      angkatan: '2021',
+      whatsapp: '081234567892',
+      formulir: 'FORMULIR PEND...',
     },
   ].map((santri, idx) => ({ ...santri, index: idx + 1 }))
 );
@@ -62,11 +73,13 @@ const daftarSantri = ref(
 // Filter State
 const filters = ref({
   global: { value: null, matchMode: 'contains' },
-  name: { value: null, matchMode: 'contains' },
-  angkatan: { value: null, matchMode: 'contains' },
-  gender: { value: null, matchMode: 'equals' },
+  fullname: { value: null, matchMode: 'contains' },
   jurusan: { value: null, matchMode: 'contains' },
-  role: { value: null, matchMode: 'contains' },
+  fakultas: { value: null, matchMode: 'contains' },
+  university: { value: null, matchMode: 'contains' },
+  angkatan: { value: null, matchMode: 'contains' },
+  whatsapp: { value: null, matchMode: 'contains' },
+  formulir: { value: null, matchMode: 'equals' },
 });
 
 const sortField = ref(null);
@@ -158,6 +171,11 @@ const deleteHandler = (santri) => {
     },
   });
 };
+
+// Fungsi untuk navigasi ke halaman detail
+const viewDetail = (santri) => {
+  navigateTo(`/psb/${santri.id}`);
+};
 </script>
 
 <template>
@@ -204,7 +222,7 @@ const deleteHandler = (santri) => {
       :rowsPerPageOptions="[10, 25, 50, 100]"
       paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
       currentPageReportTemplate="Menampilkan {first} hingga {last} dari {totalRecords} santri"
-      :globalFilterFields="['name', 'angkatan', 'gender', 'jurusan', 'role']"
+      :globalFilterFields="['fullname', 'jurusan', 'fakultas', 'university', 'angkatan', 'whatsapp', 'formulir_status']"
       tableStyle="min-width: 50rem"
       filterDisplay="menu"
       class="p-datatable-hoverable rounded-table"
@@ -214,10 +232,28 @@ const deleteHandler = (santri) => {
           {{ data.index }}
         </template>
       </Column>
-      <!-- Kolom-kolom dengan fitur sort -->
-      <Column field="name" header="Nama" sortable style="min-width: 12rem">
+
+      <Column field="fullname" header="Nama Lengkap" sortable style="min-width: 12rem">
         <template #body="{ data }">
-          {{ data.name }}
+          {{ data.fullname }}
+        </template>
+      </Column>
+
+      <Column field="jurusan" header="Jurusan" sortable style="min-width: 12rem">
+        <template #filter="{ filterModel }">
+          <Select v-model="filterModel.value" :options="jurusanList" placeholder="Pilih Jurusan" class="p-column-filter" />
+        </template>
+      </Column>
+
+      <Column field="fakultas" header="Fakultas" sortable style="min-width: 12rem">
+        <template #filter="{ filterModel }">
+          <Select v-model="filterModel.value" :options="fakultasList" placeholder="Pilih Fakultas" class="p-column-filter" />
+        </template>
+      </Column>
+
+      <Column field="university" header="Universitas" sortable style="min-width: 14rem">
+        <template #body="{ data }">
+          {{ data.university }}
         </template>
       </Column>
 
@@ -227,33 +263,21 @@ const deleteHandler = (santri) => {
         </template>
       </Column>
 
-      <Column field="gender" header="Jenis Kelamin" class="capitalize" :showFilterMatchModes="false" sortable>
-        <template #filter="{ filterModel }">
-          <Select
-            v-model="filterModel.value"
-            :options="['laki-laki', 'perempuan']"
-            placeholder="Pilih Jenis Kelamin"
-            class="p-column-filter capitalize"
-          />
+      <Column field="whatsapp" header="No. WhatsApp" sortable style="min-width: 10rem">
+        <template #body="{ data }">
+          {{ data.whatsapp }}
         </template>
       </Column>
 
-      <Column field="jurusan" header="Jurusan" :showFilterMatchModes="false" sortable style="min-width: 10rem">
-        <template #filter="{ filterModel }">
-          <Select v-model="filterModel.value" :options="jurusanList" placeholder="Pilih Jurusan" class="p-column-filter" />
+      <Column field="formulir" header="Formulir" :showFilterMatchModes="false" sortable style="width: 14rem">
+        <template #body="{ data }">
+          <Button :label="data.formulir" severity="info" icon="pi pi-file-pdf" outlined />
         </template>
       </Column>
 
-      <Column field="role" header="Role" class="capitalize" :showFilterMatchModes="false" sortable>
-        <template #filter="{ filterModel }">
-          <Select v-model="filterModel.value" :options="roleList" class="p-column-filter capitalize" placeholder="Pilih Role" />
-        </template>
-      </Column>
-
-      <Column style="width: 8rem">
+      <Column style="width: 5rem">
         <template #body="slotProps">
-          <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editHandler(slotProps.data)" />
-          <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteHandler(slotProps.data)" />
+          <Button icon="pi pi-info-circle" label="Detail" @click="viewDetail(slotProps.data)" />
         </template>
       </Column>
     </DataTable>
