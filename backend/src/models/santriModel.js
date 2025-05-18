@@ -9,8 +9,8 @@ class SantriModel {
     try {
       const queryBuilder = {
         baseQuery: 'SELECT * FROM santri',
-        params: [],
-        conditions: [],
+        params: ['admin'], // Parameter untuk mengecualikan role admin
+        conditions: ['role != ?'], // Kondisi untuk mengecualikan role admin
 
         addGenderFilter(gender) {
           if (gender) {
@@ -48,7 +48,11 @@ class SantriModel {
         },
       };
 
-      const { query, params } = queryBuilder.addGenderFilter(gender).addStatusFilter(status).addRoleFilter(role).buildFinalQuery();
+      const { query, params } = queryBuilder
+        .addGenderFilter(gender)
+        .addStatusFilter(status)
+        .addRoleFilter(role)
+        .buildFinalQuery();
 
       const [rows] = await db.query(query, params);
       return rows;

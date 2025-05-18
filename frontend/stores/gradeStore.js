@@ -578,6 +578,26 @@ export const useGradeStore = defineStore('grade', () => {
     }
   };
 
+  const getByCode = async (code) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await $fetch(`${config.public.apiBase}/grades/code/${code}`);
+
+      if (!response) {
+        throw new Error('Tidak ada data yang diterima dari server');
+      }
+
+      return response.data;
+    } catch (err) {
+      console.error('Store Error: Gagal mengambil data grade berdasarkan kode:', err);
+      error.value = err.message || 'Gagal mengambil data grade berdasarkan kode';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // State
     hafalanStatusList,
@@ -617,6 +637,7 @@ export const useGradeStore = defineStore('grade', () => {
     saveAllChanges,
     setFilters,
     resetFilters,
+    getByCode,
     // Actions untuk kategori
     fetchCategories,
     createCategory,

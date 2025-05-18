@@ -39,6 +39,10 @@ export default defineNuxtConfig({
     },
     baseURL: 'http://127.0.0.1:8000'
   },
+  routeRules: {
+    '/auth/raport-santri': { auth: false },
+    '/progress-ngaji/**': { auth: false }
+  },
   vite: {
     plugins: [
       tailwindcss(),

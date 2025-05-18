@@ -178,9 +178,9 @@ onMounted(() => {
       filterDisplay="menu"
       class="p-datatable-hoverable rounded-table"
     >
-      <Column field="id" header="No." style="width: 2rem">
+      <Column field="index" header="No." style="width: 2rem">
         <template #body="{ data }">
-          {{ data.id }}
+          {{ data.index }}
         </template>
       </Column>
 

@@ -3,11 +3,63 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuth } from '#imports';
 
+// Definisi Role dan Menu Access
+const ROLE_MENU_ACCESS = {
+  admin: '*', // akses semua menu
+  pentashih: '*', // akses semua menu
+  santri: ['Dashboard', 'Posts', 'Media', 'Komentar', 'Pengaturan'],
+};
+
 // Cek status autentikasi
 const { status, data, signOut } = useAuth();
 const isAuthenticated = computed(() => status.value === 'authenticated');
 // Ambil data user dari auth
 const userData = computed(() => data.value?.user || { fullname: 'Guest' });
+// Ambil role user
+const userRole = computed(() => userData.value?.role || null);
+
+// Logic Filter Menu
+const filteredMenuItems = computed(() => {
+  const role = userRole.value;
+
+  // Jika tidak ada role atau belum login, return empty array
+  if (!role || !isAuthenticated.value) {
+    return [];
+  }
+
+  // Jika admin atau pentashih, tampilkan semua menu
+  if (role === 'admin' || role === 'pentashih') {
+    return menuItems;
+  }
+
+  // Untuk santri, filter menu sesuai akses
+  if (role === 'santri') {
+    return (
+      menuItems
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => {
+            // Cek apakah menu utama diizinkan
+            const isMainMenuAllowed = ROLE_MENU_ACCESS.santri.includes(item.label);
+
+            // Jika menu punya submenu, filter juga submenu-nya
+            if (item.items && isMainMenuAllowed) {
+              return {
+                ...item,
+                items: item.items, // Tetap tampilkan semua submenu jika menu utama diizinkan
+              };
+            }
+
+            return isMainMenuAllowed;
+          }),
+        }))
+        // Hilangkan group yang tidak memiliki items
+        .filter((group) => group.items.length > 0)
+    );
+  }
+
+  return []; // Default return empty jika role tidak dikenali
+});
 
 const menuItems = [
   {
@@ -138,7 +190,7 @@ const handleLogout = async () => {
       </div>
       <div class="p-4">
         <nav>
-          <div v-for="group in menuItems" :key="group.group" class="mb-6">
+          <div v-for="group in filteredMenuItems" :key="group.group" class="mb-6">
             <h3 v-if="group.group != 'Dashboard'" class="text-sm text-gray-400 mb-2 px-4">{{ group.group }}</h3>
             <ul>
               <li v-for="item in group.items" :key="item.to" class="mb-2">

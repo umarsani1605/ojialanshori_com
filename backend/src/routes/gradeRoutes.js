@@ -332,4 +332,20 @@ router.put('/:id', GradeController.updateGrade);
  */
 router.delete('/:id', GradeController.deleteGrade);
 
+/**
+ * @swagger
+ * /grades/code/{code}:
+ *   get:
+ *     summary: Mengambil data grade berdasarkan kode santri
+ *     tags: [Grades]
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Kode santri
+ */
+router.get('/code/:code', GradeController.getGradesByCode);
+
 export default router;

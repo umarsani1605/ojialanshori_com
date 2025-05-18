@@ -5,7 +5,10 @@ class GradeCategoryModel {
   static async getAllCategory() {
     try {
       const [rows] = await db.query('SELECT * FROM grade_categories ORDER BY name');
-      return rows;
+      return rows.map((item, index) => ({
+        index: index + 1,
+        ...item
+      }));
     } catch (error) {
       throw new Error('Model Error: ' + error.message);
     }
@@ -24,7 +27,10 @@ class GradeCategoryModel {
   // Create new category
   static async createCategory(data) {
     try {
-      const [result] = await db.query('INSERT INTO grade_categories (name, type) VALUES (?, ?)', [data.name, data.type || null]);
+      const [result] = await db.query(
+        'INSERT INTO grade_categories (name, type, created_at, updated_at) VALUES (?, ?, NOW(), NOW())',
+        [data.name, data.type || null]
+      );
       const newCategoryId = result.insertId;
       return this.getCategoryById(newCategoryId);
     } catch (error) {
@@ -35,7 +41,10 @@ class GradeCategoryModel {
   // Update category
   static async updateCategory(id, data) {
     try {
-      await db.query('UPDATE grade_categories SET name = ?, type = ? WHERE id = ?', [data.name, data.type || null, id]);
+      await db.query(
+        'UPDATE grade_categories SET name = ?, type = ?, updated_at = NOW() WHERE id = ?',
+        [data.name, data.type || null, id]
+      );
       return this.getCategoryById(id);
     } catch (error) {
       throw new Error('Model Error: ' + error.message);

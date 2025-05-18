@@ -58,7 +58,7 @@ const handleLogin = async () => {
 
 <template>
   <div class="flex flex-col items-center justify-center min-h-screen bg-surface-ground">
-    <div class="card w-full max-w-lg p-12 bg-white rounded-2xl">
+    <div class="card w-[400px] p-12 bg-white rounded-2xl">
       <div class="flex justify-center mb-12">
         <img src="/logo.png" alt="logo" class="h-20" />
       </div>

@@ -192,9 +192,9 @@ onMounted(() => {
       class="p-datatable-hoverable rounded-table"
     >
       <!-- Kolom-kolom dengan fitur sort -->
-      <Column field="id" header="No." style="width: 2rem">
+      <Column field="index" header="No." style="width: 2rem">
         <template #body="{ data }">
-          {{ data.id }}
+          {{ data.index }}
         </template>
       </Column>
       <Column field="name" header="Nama" sortable style="min-width: 12rem">

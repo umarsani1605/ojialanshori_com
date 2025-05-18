@@ -11,7 +11,10 @@ class GradeSubjectModel {
         LEFT JOIN grade_categories c ON s.id_category = c.id
         ORDER BY s.name
       `);
-      return rows;
+      return rows.map((item, index) => ({
+        index: index + 1,
+        ...item
+      }));
     } catch (error) {
       throw new Error('Model Error: ' + error.message);
     }
@@ -39,12 +42,10 @@ class GradeSubjectModel {
   static async createSubject(data) {
     try {
       const { name, id_category, has_hafalan, has_setoran } = data;
-      const [result] = await db.query('INSERT INTO grade_subjects (name, id_category, has_hafalan, has_setoran) VALUES (?, ?, ?, ?)', [
-        name,
-        id_category,
-        has_hafalan,
-        has_setoran,
-      ]);
+      const [result] = await db.query(
+        'INSERT INTO grade_subjects (name, id_category, has_hafalan, has_setoran, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
+        [name, id_category, has_hafalan, has_setoran]
+      );
 
       const newSubjectId = result.insertId;
       return this.getSubjectById(newSubjectId);
@@ -57,13 +58,10 @@ class GradeSubjectModel {
   static async updateSubject(id, data) {
     try {
       const { name, id_category, has_hafalan, has_setoran } = data;
-      await db.query('UPDATE grade_subjects SET name = ?, id_category = ?, has_hafalan = ?, has_setoran = ? WHERE id = ?', [
-        name,
-        id_category,
-        has_hafalan,
-        has_setoran,
-        id,
-      ]);
+      await db.query(
+        'UPDATE grade_subjects SET name = ?, id_category = ?, has_hafalan = ?, has_setoran = ?, updated_at = NOW() WHERE id = ?',
+        [name, id_category, has_hafalan, has_setoran, id]
+      );
 
       return this.getSubjectById(id);
     } catch (error) {
@@ -97,7 +95,10 @@ class GradeSubjectModel {
         [category_id]
       );
 
-      return rows;
+      return rows.map((item, index) => ({
+        index: index + 1,
+        ...item
+      }));
     } catch (error) {
       logger.error('Model Error: Failed to get subjects by category:', error);
       throw new Error('Model Error: ' + error.message);

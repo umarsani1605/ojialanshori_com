@@ -21,6 +21,7 @@ class GradePentashihModel {
         if (!pentashihMap.has(pentashihId)) {
           // Simpan data dasar pentashih
           pentashihMap.set(pentashihId, {
+            index: pentashihMap.size + 1,
             id: pentashihId,
             id_pentashih: row.id_pentashih,
             name: row.pentashih_name,
@@ -35,7 +36,10 @@ class GradePentashihModel {
           const [santriData] = await db.query(`SELECT id, fullname as name, gender, college_year FROM santri WHERE id = ?`, [row.id_santri]);
 
           if (santriData.length > 0) {
-            pentashihMap.get(pentashihId).santri_list.push(santriData[0]);
+            pentashihMap.get(pentashihId).santri_list.push({
+              index: pentashihMap.get(pentashihId).santri_list.length + 1,
+              ...santriData[0]
+            });
           }
         }
       }
@@ -101,11 +105,17 @@ class GradePentashihModel {
       // Insert pentashih untuk setiap santri yang dibimbing
       if (santri_ids && santri_ids.length > 0) {
         for (const santri_id of santri_ids) {
-          await db.query('INSERT INTO grade_pentashih (id_pentashih, id_santri) VALUES (?, ?)', [id_pentashih, santri_id]);
+          await db.query(
+            'INSERT INTO grade_pentashih (id_pentashih, id_santri, created_at, updated_at) VALUES (?, ?, NOW(), NOW())',
+            [id_pentashih, santri_id]
+          );
         }
       } else {
         // Jika tidak ada santri, tetap buat record pentashih
-        await db.query('INSERT INTO grade_pentashih (id_pentashih) VALUES (?)', [id_pentashih]);
+        await db.query(
+          'INSERT INTO grade_pentashih (id_pentashih, created_at, updated_at) VALUES (?, NOW(), NOW())',
+          [id_pentashih]
+        );
       }
 
       // Commit transaction
@@ -148,11 +158,17 @@ class GradePentashihModel {
       // Insert new santri associations if available
       if (santri_ids && santri_ids.length > 0) {
         for (const santri_id of santri_ids) {
-          await db.query('INSERT INTO grade_pentashih (id_pentashih, id_santri) VALUES (?, ?)', [id_pentashih, santri_id]);
+          await db.query(
+            'INSERT INTO grade_pentashih (id_pentashih, id_santri, created_at, updated_at) VALUES (?, ?, NOW(), NOW())',
+            [id_pentashih, santri_id]
+          );
         }
       } else {
         // Jika tidak ada santri, tetap buat record pentashih
-        await db.query('INSERT INTO grade_pentashih (id_pentashih) VALUES (?)', [id_pentashih]);
+        await db.query(
+          'INSERT INTO grade_pentashih (id_pentashih, created_at, updated_at) VALUES (?, NOW(), NOW())',
+          [id_pentashih]
+        );
       }
 
       // Commit transaction
@@ -210,7 +226,10 @@ class GradePentashihModel {
       `,
         [id]
       );
-      return rows;
+      return rows.map((item, index) => ({
+        index: index + 1,
+        ...item
+      }));
     } catch (error) {
       logger.error('Model Error: Failed to get santri by pentashih ID:', error);
       throw new Error('Model Error: ' + error.message);

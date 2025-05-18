@@ -8,6 +8,7 @@ import { specs } from './utils/swagger.js';
 import santriRoutes from './routes/santriRoutes.js';
 import gradeRoutes from './routes/gradeRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import statisticRoutes from './routes/statisticRoutes.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/santri', santriRoutes);
 app.use('/grades', gradeRoutes);
+app.use('/statistics', statisticRoutes);
 
 // Swagger documentation route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));

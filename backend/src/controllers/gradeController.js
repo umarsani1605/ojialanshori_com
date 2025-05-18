@@ -2,6 +2,7 @@ import GradeModel from '../models/gradeModel.js';
 import GradeCategoryModel from '../models/gradeCategoryModel.js';
 import GradeSubjectModel from '../models/gradeSubjectModel.js';
 import GradePentashihModel from '../models/gradePentashihModel.js';
+import SantriModel from '../models/santriModel.js';
 import logger from '../utils/logger.js';
 
 class GradeController {
@@ -602,6 +603,69 @@ class GradeController {
         data: santriList,
       });
     } catch (error) {
+      res.status(500).json({
+        status: 'error',
+        message: 'Controller Error: ' + error.message,
+      });
+    }
+  }
+
+  // Get grades by santri code
+  static async getGradesByCode(req, res) {
+    try {
+      const { code } = req.params;
+      logger.info('Getting grades for santri code:', code);
+
+      // Cari santri berdasarkan kode
+      const santri = await SantriModel.getSantriByCode(code);
+      
+      if (!santri) {
+        logger.warn('Santri not found with code:', code);
+        return res.status(404).json({
+          status: 'error',
+          message: 'Santri tidak ditemukan',
+        });
+      }
+
+      // Ambil semua data yang diperlukan
+      const [grades, categories, subjects] = await Promise.all([
+        GradeModel.getAllGrades({ id_santri: santri.id }),
+        GradeCategoryModel.getAllCategory(),
+        GradeSubjectModel.getAllSubject(),
+      ]);
+
+      // Format response
+      const response = {
+        santri: {
+          code: santri.code,
+          fullname: santri.fullname,
+          college_year: santri.college_year,
+          university: santri.university,
+          faculty: santri.faculty,
+          major: santri.major,
+        },
+        categories: categories.map(category => ({
+          ...category,
+          subjects: subjects
+            .filter(subject => subject.id_category === category.id)
+            .map(subject => {
+              const grade = grades.find(g => g.id_subject === subject.id);
+              return {
+                ...subject,
+                hafalan: grade?.hafalan || 'belum',
+                setoran: grade?.setoran || 'belum',
+              };
+            }),
+        })),
+      };
+
+      logger.info('Successfully retrieved grades for santri');
+      res.status(200).json({
+        status: 'success',
+        data: response,
+      });
+    } catch (error) {
+      logger.error('Controller Error: Failed to get grades by code:', error);
       res.status(500).json({
         status: 'error',
         message: 'Controller Error: ' + error.message,

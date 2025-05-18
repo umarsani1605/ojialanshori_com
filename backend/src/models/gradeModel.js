@@ -58,7 +58,10 @@ class GradeModel {
       logger.info('Model Query Params: ' + queryParams);
 
       const [rows] = await db.query(sql, queryParams);
-      return rows;
+      return rows.map((item, index) => ({
+        index: index + 1,
+        ...item
+      }));
     } catch (error) {
       logger.error('Model Error: Failed to get grades:', error);
       throw new Error('Model Error: ' + error.message);
@@ -109,8 +112,11 @@ class GradeModel {
 
       // Jika belum ada, buat grade baru
       const sql = `
-        INSERT INTO grade_grades (id_santri, id_pentashih, id_category, id_subject, hafalan, setoran)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO grade_grades (
+          id_santri, id_pentashih, id_category, id_subject, 
+          hafalan, setoran, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
       `;
 
       const [result] = await db.query(sql, [
@@ -119,7 +125,7 @@ class GradeModel {
         data.id_category,
         data.id_subject,
         data.hafalan || 'belum',
-        data.setoran || 'belum',
+        data.setoran || 'belum'
       ]);
 
       const id = result.insertId;
@@ -135,17 +141,25 @@ class GradeModel {
     try {
       const sql = `
         UPDATE grade_grades
-                SET id_santri = ?, 
-                    id_pentashih = ?,
-                    id_category = ?,
-                    id_subject = ?,
-                    hafalan = ?,
-                    setoran = ?,
-            updated_at = CURRENT_TIMESTAMP
+        SET id_santri = ?, 
+            id_pentashih = ?,
+            id_category = ?,
+            id_subject = ?,
+            hafalan = ?,
+            setoran = ?,
+            updated_at = NOW()
         WHERE id = ?
       `;
 
-      await db.query(sql, [data.id_santri, data.id_pentashih, data.id_category, data.id_subject, data.hafalan, data.setoran, id]);
+      await db.query(sql, [
+        data.id_santri,
+        data.id_pentashih,
+        data.id_category,
+        data.id_subject,
+        data.hafalan || 'belum',
+        data.setoran || 'belum',
+        id
+      ]);
 
       return this.getGradeById(id);
     } catch (error) {

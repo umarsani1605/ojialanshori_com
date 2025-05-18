@@ -673,7 +673,7 @@ const handleDateChange = (data) => {
           />
           <label for="pentashihFilter">Pentashih</label>
         </FloatLabel>
-        <Divider layout="vertical" class="h-full" />
+        <Divider layout="vertical" class="h-full border-none" />
         <IconField iconPosition="left" class="block mt-2 md:mt-0">
           <InputIcon class="pi pi-search" />
           <InputText class="w-96" v-model="filters['santri.name'].value" placeholder="Cari santri..." />
