@@ -19,6 +19,26 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@sidebase/nuxt-auth',
   ],
+  auth: {
+    provider: {
+      type: 'local',
+      endpoints: {
+        signIn: { path: '/auth/login', method: 'post' },
+        getSession: { path: '/auth/session', method: 'get' }
+      },
+      token: {
+        signInResponseTokenPointer: '/token',
+        type: 'Bearer'
+      },
+      pages: {
+        login: '/auth/login'
+      }
+    },
+    globalAppMiddleware: {
+      isEnabled: true
+    },
+    baseURL: 'http://127.0.0.1:8000'
+  },
   vite: {
     plugins: [
       tailwindcss(),

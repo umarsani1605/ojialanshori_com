@@ -1,6 +1,13 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { useAuth } from '#imports';
+
+// Cek status autentikasi
+const { status, data, signOut } = useAuth();
+const isAuthenticated = computed(() => status.value === 'authenticated');
+// Ambil data user dari auth
+const userData = computed(() => data.value?.user || { fullname: 'Guest' });
 
 const menuItems = [
   {
@@ -109,6 +116,16 @@ const pageTitle = computed(() => {
 
   return menuItem ? menuItem.label : 'Dashboard';
 });
+
+// Fungsi untuk logout
+const handleLogout = async () => {
+  try {
+    await signOut();
+    // Redirect setelah logout berhasil dilakukan oleh middleware
+  } catch (error) {
+    console.error('Logout error', error);
+  }
+};
 </script>
 
 <template>
@@ -183,7 +200,17 @@ const pageTitle = computed(() => {
         <h2 class="h-full text-xl font-semibold flex items-center text-gray-700">{{ pageTitle }}</h2>
         <div class="h-full cursor-pointer px-4 flex items-center justify-center gap-4 rounded-lg transition hover:bg-gray-200">
           <Icon name="lucide:user" size="18" />
-          <span class="">Admin</span>
+          <span class="">{{ userData.fullname }}</span>
+          <Button
+            v-if="isAuthenticated"
+            icon="pi pi-sign-out"
+            text
+            rounded
+            severity="secondary"
+            aria-label="Logout"
+            title="Logout"
+            @click="handleLogout"
+          />
         </div>
       </div>
       <div class="h-full p-6">
