@@ -7,7 +7,7 @@ import { specs } from './utils/swagger.js';
 
 import santriRoutes from './routes/santriRoutes.js';
 import gradeRoutes from './routes/gradeRoutes.js';
-// import authRoutes from './routes/authRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes akan ditambahkan di sini nanti
-// app.use('/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/santri', santriRoutes);
 app.use('/grades', gradeRoutes);
 

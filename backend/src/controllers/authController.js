@@ -1,70 +1,84 @@
-const { Santri, Pentashih, Admin } = require('../models');
+import jwt from 'jsonwebtoken';
+import SantriModel from '../models/santriModel.js';
 
-const login = async (req, res) => {
-  try {
-    const { code } = req.body;
+// Secret key untuk JWT (sebaiknya gunakan .env untuk production)
+const JWT_SECRET = 'your_secret_key_here';
 
-    // Cari santri berdasarkan kode
-    const santri = await Santri.findOne({ where: { code } });
-    if (!santri) {
-      return res.status(404).json({ message: 'Kode tidak valid' });
+class AuthController {
+  // Login handler
+  static async login(req, res) {
+    try {
+      const { emailOrPhone, password } = req.body;
+
+      if (!emailOrPhone || !password) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Email/phone dan password harus diisi',
+        });
+      }
+
+      // Cari santri berdasarkan email atau phone
+      const [rows] = await SantriModel.db.query('SELECT * FROM santri WHERE email = ? OR phone = ?', [emailOrPhone, emailOrPhone]);
+
+      const user = rows[0];
+
+      // Jika user tidak ditemukan
+      if (!user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'User tidak ditemukan',
+        });
+      }
+
+      // Cek password (tanpa hashing, hanya string kasar)
+      if (user.password !== password) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Password salah',
+        });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        {
+          userId: user.id,
+          role: user.role,
+        },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      // Hapus password dari response
+      delete user.password;
+
+      // Return token dan data user
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          code: user.code,
+          fullname: user.fullname,
+          role: user.role,
+          email: user.email,
+          phone: user.phone,
+        },
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Terjadi kesalahan pada server',
+      });
     }
-
-    // Tentukan role berdasarkan data santri
-    let role = 'santri';
-    let userData = {
-      id: santri.id,
-      name: santri.name,
-      role: role,
-    };
-
-    // Cek apakah santri adalah pentashih
-    const pentashih = await Pentashih.findOne({ where: { santri_id: santri.id } });
-    if (pentashih) {
-      role = 'pentashih';
-      userData = {
-        ...userData,
-        role: role,
-        pentashih_id: pentashih.id,
-      };
-    }
-
-    // Cek apakah santri adalah admin
-    const admin = await Admin.findOne({ where: { santri_id: santri.id } });
-    if (admin) {
-      role = 'admin';
-      userData = {
-        ...userData,
-        role: role,
-        admin_id: admin.id,
-      };
-    }
-
-    // Simpan data user di session
-    req.session.user = userData;
-
-    res.json({ user: userData });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan saat login' });
   }
-};
 
-const logout = (req, res) => {
-  req.session.destroy();
-  res.json({ message: 'Logout berhasil' });
-};
+  // Get user session handler
+  static async getSession(req, res) {
+    // User sudah ada di req karena sudah diproses di middleware
+    const { user } = req;
 
-const getCurrentUser = (req, res) => {
-  const user = req.session?.user;
-  if (!user) {
-    return res.status(401).json({ message: 'Tidak ada user yang login' });
+    res.json({ user });
   }
-  res.json({ user });
-};
+}
 
-module.exports = {
-  login,
-  logout,
-  getCurrentUser,
-};
+export default AuthController;

@@ -72,13 +72,13 @@ class GradeModel {
         SELECT g.*, 
                s.fullname as santri_name,
                p.fullname as pentashih_name,
-               c.name as category_name,
+                        c.name as category_name,
                sb.name as subject_name,
                sb.has_hafalan,
                sb.has_setoran
         FROM grade_grades g
-        LEFT JOIN santri s ON g.id_santri = s.id
-        LEFT JOIN santri p ON g.id_pentashih = p.id
+                 LEFT JOIN santri s ON g.id_santri = s.id
+                 LEFT JOIN santri p ON g.id_pentashih = p.id
         LEFT JOIN grade_categories c ON g.id_category = c.id
         LEFT JOIN grade_subjects sb ON g.id_subject = sb.id
         WHERE g.id = ?
@@ -135,12 +135,12 @@ class GradeModel {
     try {
       const sql = `
         UPDATE grade_grades
-        SET id_santri = ?,
-            id_pentashih = ?,
-            id_category = ?,
-            id_subject = ?,
-            hafalan = ?,
-            setoran = ?,
+                SET id_santri = ?, 
+                    id_pentashih = ?,
+                    id_category = ?,
+                    id_subject = ?,
+                    hafalan = ?,
+                    setoran = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `;
