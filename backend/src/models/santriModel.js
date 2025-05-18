@@ -1,6 +1,9 @@
 import { db } from '../config/database.js';
 
 class SantriModel {
+  // Expose db untuk digunakan di controller lain
+  static db = db;
+
   // Mengambil semua data santri dengan filter gender, status, dan role
   static async getAllSantri(gender = null, status = null, role = null) {
     try {

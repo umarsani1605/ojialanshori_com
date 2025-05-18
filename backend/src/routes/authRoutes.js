@@ -1,14 +1,13 @@
-const express = require('express');
+import express from 'express';
+import AuthController from '../controllers/authController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-const { login, logout, getCurrentUser } = require('../controllers/authController');
 
-// Route untuk login
-router.post('/login', login);
+// Route login
+router.post('/login', AuthController.login);
 
-// Route untuk logout
-router.post('/logout', logout);
+// Route untuk mendapatkan session user yang sedang login
+router.get('/session', authMiddleware, AuthController.getSession);
 
-// Route untuk mendapatkan data user yang sedang login
-router.get('/me', getCurrentUser);
-
-module.exports = router;
+export default router;

@@ -5,175 +5,163 @@ class GradeModel {
   // Mengambil semua data grades dengan filter opsional
   static async getAllGrades(filters = {}) {
     try {
-      const queryBuilder = {
-        baseQuery: `
-                    SELECT g.*, 
-                           s.name as santri_name,
-                           p.id as id_pentashih,
-                           p.name as pentashih_name,
-                           c.name as category_name,
-                           sb.name as subject_name
-                    FROM grades g
-                    LEFT JOIN santri s ON g.id_santri = s.id
-                    LEFT JOIN santri p ON g.id_pentashih = p.id
-                    LEFT JOIN categories c ON g.id_category = c.id
-                    LEFT JOIN subjects sb ON g.id_subject = sb.id
-                `,
-        params: [],
-        conditions: [],
+      const queryParams = [];
+      let whereClause = '';
 
-        addSantriFilter(id_santri) {
-          if (id_santri) {
-            this.conditions.push('g.id_santri = ?');
-            this.params.push(id_santri);
-          }
-          return this;
-        },
+      // Build where clause dari filter
+      if (filters) {
+        const conditions = [];
 
-        addPentashihFilter(id_pentashih) {
-          if (id_pentashih) {
-            this.conditions.push('g.id_pentashih = ?');
-            this.params.push(id_pentashih);
-          }
-          return this;
-        },
+        if (filters.id_santri) {
+          conditions.push('g.id_santri = ?');
+          queryParams.push(filters.id_santri);
+        }
 
-        addCategoryFilter(id_category) {
-          if (id_category) {
-            this.conditions.push('g.id_category = ?');
-            this.params.push(id_category);
-          }
-          return this;
-        },
+        if (filters.id_pentashih) {
+          conditions.push('g.id_pentashih = ?');
+          queryParams.push(filters.id_pentashih);
+        }
 
-        addSubjectFilter(id_subject) {
-          if (id_subject) {
-            this.conditions.push('g.id_subject = ?');
-            this.params.push(id_subject);
-          }
-          return this;
-        },
+        if (filters.id_category) {
+          conditions.push('g.id_category = ?');
+          queryParams.push(filters.id_category);
+        }
 
-        buildFinalQuery() {
-          let finalQuery = this.baseQuery;
+        if (filters.id_subject) {
+          conditions.push('g.id_subject = ?');
+          queryParams.push(filters.id_subject);
+        }
 
-          if (this.conditions.length > 0) {
-            finalQuery += ' WHERE ' + this.conditions.join(' AND ');
-          }
+        if (conditions.length > 0) {
+          whereClause = 'WHERE ' + conditions.join(' AND ');
+        }
+      }
 
-          finalQuery += ' ORDER BY g.created_at DESC';
-          return { query: finalQuery, params: this.params };
-        },
-      };
+      const sql = `
+        SELECT g.*, 
+               s.fullname as santri_name,
+               p.fullname as pentashih_name,
+               c.name as category_name,
+               sb.name as subject_name,
+               sb.has_hafalan,
+               sb.has_setoran
+        FROM grade_grades g
+        LEFT JOIN santri s ON g.id_santri = s.id
+        LEFT JOIN santri p ON g.id_pentashih = p.id
+        LEFT JOIN grade_categories c ON g.id_category = c.id
+        LEFT JOIN grade_subjects sb ON g.id_subject = sb.id
+        ${whereClause}
+        ORDER BY g.id_santri, c.id, sb.id
+      `;
 
-      const { id_santri, id_pentashih, id_category, id_subject } = filters;
-      const { query, params } = queryBuilder
-        .addSantriFilter(id_santri)
-        .addPentashihFilter(id_pentashih)
-        .addCategoryFilter(id_category)
-        .addSubjectFilter(id_subject)
-        .buildFinalQuery();
+      logger.info('Model Query: ' + sql);
+      logger.info('Model Query Params: ' + queryParams);
 
-      const [rows] = await db.query(query, params);
+      const [rows] = await db.query(sql, queryParams);
       return rows;
     } catch (error) {
-      logger.error('Error in getAllGrades:', error);
-      throw error;
+      logger.error('Model Error: Failed to get grades:', error);
+      throw new Error('Model Error: ' + error.message);
     }
   }
 
   // Mengambil detail grade berdasarkan ID
   static async getGradeById(id) {
     try {
-      const [rows] = await db.query(
-        `SELECT g.*, 
-                        s.name as santri_name,
-                        p.id as id_pentashih,
-                        p.name as pentashih_name,
+      const sql = `
+        SELECT g.*, 
+               s.fullname as santri_name,
+               p.fullname as pentashih_name,
                         c.name as category_name,
-                        sb.name as subject_name
-                 FROM grades g
+               sb.name as subject_name,
+               sb.has_hafalan,
+               sb.has_setoran
+        FROM grade_grades g
                  LEFT JOIN santri s ON g.id_santri = s.id
                  LEFT JOIN santri p ON g.id_pentashih = p.id
-                 LEFT JOIN categories c ON g.id_category = c.id
-                 LEFT JOIN subjects sb ON g.id_subject = sb.id
-                 WHERE g.id = ?`,
-        [id]
-      );
+        LEFT JOIN grade_categories c ON g.id_category = c.id
+        LEFT JOIN grade_subjects sb ON g.id_subject = sb.id
+        WHERE g.id = ?
+      `;
+
+      const [rows] = await db.query(sql, [id]);
+      if (rows.length === 0) {
+        return null;
+      }
       return rows[0];
     } catch (error) {
-      logger.error('Error in getGradeById:', error);
-      throw error;
+      logger.error('Model Error: Failed to get grade by ID:', error);
+      throw new Error('Model Error: ' + error.message);
     }
   }
 
   // Menambah grade baru
-  static async createGrade(gradeData) {
+  static async createGrade(data) {
     try {
-      const { id_santri, id_pentashih, id_category, id_subject, hafalan, setoran } = gradeData;
+      // Cek apakah grade sudah ada untuk santri dan subject tersebut
+      const [existingRows] = await db.query('SELECT * FROM grade_grades WHERE id_santri = ? AND id_subject = ?', [data.id_santri, data.id_subject]);
 
-      const [result] = await db.query(
-        `INSERT INTO grades 
-                (id_santri, id_pentashih, id_category, id_subject, hafalan, setoran, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-        [id_santri, id_pentashih, id_category, id_subject, hafalan, setoran]
-      );
+      if (existingRows.length > 0) {
+        // Jika sudah ada, update grade yang ada
+        const existingId = existingRows[0].id;
+        return this.updateGrade(existingId, data);
+      }
 
-      return {
-        id: result.insertId,
-        ...gradeData,
-      };
+      // Jika belum ada, buat grade baru
+      const sql = `
+        INSERT INTO grade_grades (id_santri, id_pentashih, id_category, id_subject, hafalan, setoran)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+
+      const [result] = await db.query(sql, [
+        data.id_santri,
+        data.id_pentashih,
+        data.id_category,
+        data.id_subject,
+        data.hafalan || 'belum',
+        data.setoran || 'belum',
+      ]);
+
+      const id = result.insertId;
+      return this.getGradeById(id);
     } catch (error) {
-      logger.error('Error in createGrade:', error);
-      throw error;
+      logger.error('Model Error: Failed to create grade:', error);
+      throw new Error('Model Error: ' + error.message);
     }
   }
 
   // Mengupdate grade
-  static async updateGrade(id, gradeData) {
+  static async updateGrade(id, data) {
     try {
-      const { id_santri, id_pentashih, id_category, id_subject, hafalan, setoran } = gradeData;
-
-      const [result] = await db.query(
-        `UPDATE grades 
+      const sql = `
+        UPDATE grade_grades
                 SET id_santri = ?, 
                     id_pentashih = ?,
                     id_category = ?,
                     id_subject = ?,
                     hafalan = ?,
                     setoran = ?,
-                    updated_at = NOW()
-                WHERE id = ?`,
-        [id_santri, id_pentashih, id_category, id_subject, hafalan, setoran, id]
-      );
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `;
 
-      if (result.affectedRows === 0) {
-        throw new Error('Grade tidak ditemukan');
-      }
+      await db.query(sql, [data.id_santri, data.id_pentashih, data.id_category, data.id_subject, data.hafalan, data.setoran, id]);
 
-      return {
-        id,
-        ...gradeData,
-      };
+      return this.getGradeById(id);
     } catch (error) {
-      logger.error('Error in updateGrade:', error);
-      throw error;
+      logger.error('Model Error: Failed to update grade:', error);
+      throw new Error('Model Error: ' + error.message);
     }
   }
 
   // Menghapus grade
   static async deleteGrade(id) {
     try {
-      const [result] = await db.query('DELETE FROM grades WHERE id = ?', [id]);
-
-      if (result.affectedRows === 0) {
-        throw new Error('Grade tidak ditemukan');
-      }
-
+      await db.query('DELETE FROM grade_grades WHERE id = ?', [id]);
       return true;
     } catch (error) {
-      logger.error('Error in deleteGrade:', error);
-      throw error;
+      logger.error('Model Error: Failed to delete grade:', error);
+      throw new Error('Model Error: ' + error.message);
     }
   }
 }

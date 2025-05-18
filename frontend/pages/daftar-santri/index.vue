@@ -3,6 +3,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useSantriStore } from '@/stores/santriStore';
 import Tag from 'primevue/tag';
+import Skeleton from 'primevue/skeleton';
 import Avatar from 'primevue/avatar';
 
 const dt = ref();
@@ -92,7 +93,7 @@ const viewDetail = (santri) => {
 </script>
 
 <template>
-  <div class="card bg-white border-slate-200 rounded-lg border p-8">
+  <div class="card bg-white border-slate-200 rounded-lg border p-8 h-full">
     <div class="flex flex-col gap-2">
       <Toolbar class="toolbar !px-0 !border-none">
         <template #start>
@@ -111,7 +112,50 @@ const viewDetail = (santri) => {
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="p-4">Loading...</div>
+    <div v-if="loading" class="border border-slate-200 rounded-lg px-6 py-4">
+      <!-- Header Skeleton -->
+      <div class="flex gap-4 mb-4 border-b border-slate-200 py-6">
+        <Skeleton shape="circle" size="2rem" class="mr-2" />
+        <div class="flex gap-8 w-full">
+          <Skeleton width="10%" height="2rem" class="mb-1" />
+          <Skeleton width="20%" height="2rem" class="mb-1" />
+          <Skeleton width="10%" height="2rem" class="mb-1" />
+          <Skeleton width="10%" height="2rem" class="mb-1" />
+          <Skeleton width="15%" height="2rem" class="mb-1" />
+          <Skeleton width="15%" height="2rem" class="mb-1" />
+          <Skeleton width="10%" height="2rem" class="mb-1" />
+          <Skeleton width="5%" height="2rem" class="mb-1" />
+        </div>
+      </div>
+
+      <!-- Data Skeleton -->
+      <div v-for="i in 10" :key="i" class="flex gap-4 mb-2 items-center py-2 hover:bg-surface-100 transition-colors duration-200">
+        <Skeleton shape="circle" size="2rem" class="mr-2" />
+        <div class="flex gap-8 w-full">
+          <Skeleton width="10%" height="1.5rem" />
+          <Skeleton width="20%" height="1.5rem" />
+          <Skeleton width="10%" height="1.5rem" />
+          <Skeleton width="10%" height="1.5rem" />
+          <Skeleton width="15%" height="1.5rem" />
+          <Skeleton width="15%" height="1.5rem" />
+          <Skeleton width="10%" height="1.5rem" />
+          <Skeleton width="5%" height="1.5rem" />
+        </div>
+      </div>
+
+      <!-- Pagination Skeleton -->
+      <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-200">
+        <Skeleton width="15%" height="2rem" />
+        <div class="flex gap-2">
+          <Skeleton width="2.5rem" height="2rem" />
+          <Skeleton width="2.5rem" height="2rem" />
+          <Skeleton width="2.5rem" height="2rem" />
+          <Skeleton width="2.5rem" height="2rem" />
+          <Skeleton width="2.5rem" height="2rem" />
+        </div>
+        <Skeleton width="20%" height="2rem" />
+      </div>
+    </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="p-4 text-red-500">
@@ -258,5 +302,36 @@ const viewDetail = (santri) => {
 
 .rounded-table .p-datatable-tbody > tr:last-child > td:last-child {
   border-bottom-right-radius: 0.5rem;
+}
+
+/* Style untuk skeleton loading */
+.p-skeleton {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  margin: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.p-skeleton::after {
+  animation: p-skeleton-animation 1.5s infinite;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  content: '';
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translateX(-100%);
+  z-index: 1;
+}
+
+@keyframes p-skeleton-animation {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 </style>

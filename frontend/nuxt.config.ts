@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/image',
     '@pinia/nuxt',
+    '@sidebase/nuxt-auth',
   ],
   vite: {
     plugins: [
