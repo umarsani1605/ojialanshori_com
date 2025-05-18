@@ -5,40 +5,49 @@ class GradePentashihModel {
   // Get all pentashih
   static async getAllPentashih() {
     try {
+      // Ambil data pentashih dan santri yang dibimbing
       const [rows] = await db.query(`
-        SELECT p.*, s.fullname as pentashih_name, s.gender
-        FROM grade_pentashih p
-        JOIN santri s ON p.id_pentashih = s.id
-        ORDER BY s.fullname
+        SELECT DISTINCT 
+          gp.id_pentashih,
+          s1.fullname as pentashih_name,
+          s1.gender as pentashih_gender,
+          s2.id as santri_id,
+          s2.fullname as santri_name,
+          s2.gender as santri_gender,
+          s2.college_year as santri_college_year
+        FROM grade_pentashih gp
+        JOIN santri s1 ON gp.id_pentashih = s1.id
+        LEFT JOIN santri s2 ON gp.id_santri = s2.id
+        ORDER BY s1.fullname, s2.fullname
       `);
 
-      // Kelompokkan pentashih dan santri yang dibimbing
+      // Kelompokkan data berdasarkan pentashih
       const pentashihMap = new Map();
+      let index = 1;
 
       for (const row of rows) {
-        const pentashihId = row.id;
+        const pentashihId = row.id_pentashih;
 
         if (!pentashihMap.has(pentashihId)) {
-          // Simpan data dasar pentashih
+          // Buat entri baru untuk pentashih
           pentashihMap.set(pentashihId, {
-            index: pentashihMap.size + 1,
             id: pentashihId,
-            id_pentashih: row.id_pentashih,
+            index: index++,
             name: row.pentashih_name,
-            gender: row.gender,
-            santri_list: [],
+            gender: row.pentashih_gender,
+            santri_list: []
           });
         }
 
-        // Tambahkan santri jika ada
-        if (row.id_santri) {
-          // Dapatkan informasi santri
-          const [santriData] = await db.query(`SELECT id, fullname as name, gender, college_year FROM santri WHERE id = ?`, [row.id_santri]);
-
-          if (santriData.length > 0) {
+        // Tambahkan santri ke daftar jika ada
+        if (row.santri_id) {
+          const existingSantri = pentashihMap.get(pentashihId).santri_list.find(s => s.id === row.santri_id);
+          if (!existingSantri) {
             pentashihMap.get(pentashihId).santri_list.push({
-              index: pentashihMap.get(pentashihId).santri_list.length + 1,
-              ...santriData[0]
+              id: row.santri_id,
+              name: row.santri_name,
+              gender: row.santri_gender,
+              college_year: row.santri_college_year
             });
           }
         }

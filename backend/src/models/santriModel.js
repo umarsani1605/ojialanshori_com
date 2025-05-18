@@ -1,4 +1,5 @@
 import { db } from '../config/database.js';
+import logger from '../utils/logger.js';
 
 class SantriModel {
   // Expose db untuk digunakan di controller lain
@@ -248,6 +249,36 @@ class SantriModel {
       return rows;
     } catch (error) {
       throw error;
+    }
+  }
+
+  // Update role santri
+  static async updateRole(id, role) {
+    try {
+      logger.info(`Updating role for santri ID ${id} to ${role}`);
+
+      // Cek apakah santri ada
+      const [checkSantri] = await db.query('SELECT id FROM santri WHERE id = ?', [id]);
+      
+      if (checkSantri.length === 0) {
+        throw new Error('Santri tidak ditemukan');
+      }
+
+      const [result] = await db.query(
+        'UPDATE santri SET role = ?, updated_at = NOW() WHERE id = ?',
+        [role, id]
+      );
+
+      logger.info(`Update result:`, result);
+
+      if (result.affectedRows === 0) {
+        throw new Error('Santri tidak ditemukan');
+      }
+
+      return result;
+    } catch (error) {
+      logger.error('Model Error: Failed to update santri role:', error);
+      throw new Error(error.message);
     }
   }
 }

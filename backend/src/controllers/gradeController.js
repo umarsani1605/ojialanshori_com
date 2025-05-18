@@ -672,6 +672,40 @@ class GradeController {
       });
     }
   }
+
+  // Add new pentashih
+  static async addPentashih(req, res) {
+    try {
+      const { id_pentashih, santri_ids } = req.body;
+
+      if (!id_pentashih) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'ID Pentashih harus diisi',
+        });
+      }
+
+      // Update role santri menjadi pentashih
+      await SantriModel.updateRole(id_pentashih, 'pentashih');
+
+      // Tambahkan ke tabel grade_pentashih
+      const newPentashih = await GradePentashihModel.createPentashih({
+        id_pentashih,
+        santri_ids,
+      });
+
+      res.status(201).json({
+        status: 'success',
+        message: 'Pentashih berhasil ditambahkan',
+        data: newPentashih,
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: 'error',
+        message: 'Controller Error: ' + error.message,
+      });
+    }
+  }
 }
 
 export default GradeController;

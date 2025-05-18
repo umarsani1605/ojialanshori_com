@@ -268,6 +268,15 @@ router.put('/pentashih/:id', GradeController.updatePentashih);
  */
 router.delete('/pentashih/:id', GradeController.deletePentashih);
 
+/**
+ * @swagger
+ * /grades/pentashih/add:
+ *   post:
+ *     summary: Menambah pentashih baru dan mengubah role santri
+ *     tags: [Pentashih]
+ */
+router.post('/pentashih/add', GradeController.addPentashih);
+
 // ===== ROUTE UNTUK GRADE =====
 
 /**

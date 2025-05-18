@@ -659,9 +659,9 @@ const handleDateChange = (data) => {
             class="w-full"
             showClear
           />
-          <label for="genderFilter">Gender</label>
+          <label for="genderFilter">Jenis Kelamin</label>
         </FloatLabel>
-        <FloatLabel class="w-48" variant="on">
+        <!-- <FloatLabel class="w-48" variant="on">
           <Select
             inputId="pentashihFilter"
             :options="pentashihOptionsWithAll"
@@ -672,7 +672,7 @@ const handleDateChange = (data) => {
             showClear
           />
           <label for="pentashihFilter">Pentashih</label>
-        </FloatLabel>
+        </FloatLabel> -->
         <Divider layout="vertical" class="h-full border-none" />
         <IconField iconPosition="left" class="block mt-2 md:mt-0">
           <InputIcon class="pi pi-search" />

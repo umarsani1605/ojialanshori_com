@@ -249,6 +249,33 @@ class SantriController {
       });
     }
   }
+
+  // Update role santri
+  static async updateRole(req, res) {
+    try {
+      const { id, role } = req.body;
+
+      if (!id || !role) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'ID dan role harus diisi',
+        });
+      }
+
+      await SantriModel.updateRole(id, role);
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Role santri berhasil diupdate',
+      });
+    } catch (error) {
+      logger.error('Controller Error: Failed to update santri role:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Controller Error: ' + error.message,
+      });
+    }
+  }
 }
 
 export default SantriController;

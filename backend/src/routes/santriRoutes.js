@@ -113,6 +113,27 @@ const router = express.Router();
  */
 router.get('/', SantriController.getAllSantri);
 
+
+/**
+ * @swagger
+ * /santri/role:
+ *   put:
+ *     summary: Update role santri
+ *     tags: [Santri]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               role:
+ *                 type: string
+ */
+router.put('/role', SantriController.updateRole);
+
 /**
  * @swagger
  * /santri/{id}:

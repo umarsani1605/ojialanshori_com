@@ -7,6 +7,8 @@ import DeleteDialog from '@/components/dialogs/DeleteDialog.vue';
 import Tag from 'primevue/tag';
 import Dropdown from 'primevue/dropdown';
 import { useSantriStore } from '@/stores/santriStore';
+import Chip from 'primevue/chip';
+import Badge from 'primevue/badge';
 
 const dialog = useDialog();
 const dt = ref();
@@ -201,7 +203,7 @@ onMounted(() => {
         </template>
       </Column>
 
-      <Column field="gender" header="Gender" sortable style="width: 10rem">
+      <Column field="gender" header="Jenis Kelamin" style="width: 12rem">
         <template #body="{ data }">
           <Tag :value="getGenderLabel(data.gender)" :severity="getGenderSeverity(data.gender)" />
         </template>
@@ -228,7 +230,7 @@ onMounted(() => {
         </template>
       </Column>
 
-      <Column field="santri_list" header="Daftar Santri" style="min-width: 20rem">
+      <Column field="santri_list" header="Daftar Santri" style="width: 60rem">
         <template #body="{ data }">
           <div class="flex flex-wrap gap-2">
             <Chip
@@ -237,6 +239,7 @@ onMounted(() => {
               :label="santri.name"
               class="!bg-[var(--p-primary-100)] !text-[var(--p-primary-800)] !px-4 !rounded-2xl font-medium"
             />
+            <div v-if="data.santri_list.length === 0" class="text-gray-500 italic">Belum ada santri</div>
           </div>
         </template>
       </Column>

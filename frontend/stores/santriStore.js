@@ -238,6 +238,38 @@ export const useSantriStore = defineStore('santri', () => {
     error.value = null;
   };
 
+  // Update role santri
+  const updateRole = async (id, role) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      console.log('Updating role with data:', { id, role }); // Debug log
+
+      const response = await $fetch(`${config.public.apiBase}/santri/role`, {
+        method: 'PUT',
+        body: { id, role },
+      });
+
+      if (!response) {
+        throw new Error('Tidak ada data yang diterima dari server');
+      }
+
+      // Update local data juga
+      const index = santriList.value.findIndex(s => s.id === id);
+      if (index !== -1) {
+        santriList.value[index].role = role;
+      }
+
+      return response;
+    } catch (err) {
+      console.error('Store Error: Failed to update santri role:', err);
+      error.value = err.message || 'Gagal mengupdate role santri';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // State
     collegeYearList,
@@ -272,5 +304,6 @@ export const useSantriStore = defineStore('santri', () => {
     search,
     setAllData,
     resetState,
+    updateRole,
   };
 });
