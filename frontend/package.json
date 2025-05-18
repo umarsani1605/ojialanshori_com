@@ -28,6 +28,7 @@
     "@nuxt/image": "^1.10.0",
     "@pinia/nuxt": "^0.11.0",
     "@primevue/nuxt-module": "^4.3.3",
+    "@sidebase/nuxt-auth": "^0.10.1",
     "sass-embedded": "^1.87.0"
   }
 }
